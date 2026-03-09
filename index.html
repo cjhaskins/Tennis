@@ -1182,13 +1182,13 @@
 
   <div class="reveal" style="transition-delay:0.15s; padding-top:20px;">
     <p class="section-tag">Send a Message</p>
-    <form class="contact-form" onsubmit="handleSubmit(event)">
+    <form class="contact-form" method="POST">
       <div class="form-row">
-        <div><label class="form-label">First Name</label><input type="text" class="form-input" placeholder="Alex"></div>
-        <div><label class="form-label">Last Name</label><input type="text" class="form-input" placeholder="Johnson"></div>
+        <div><label class="form-label">First Name</label><input type="text" name="first_name" class="form-input" placeholder="Alex" required></div>
+        <div><label class="form-label">Last Name</label><input type="text" name="last_name" class="form-input" placeholder="Johnson" required></div>
       </div>
-      <div><label class="form-label">Email</label><input type="email" class="form-input" placeholder="alex@email.com"></div>
-      <div><label class="form-label">Message</label><textarea class="form-textarea" placeholder="Tell me about your goals, current level, and what you want to achieve..."></textarea></div>
+      <div><label class="form-label">Email</label><input type="email" name="email" class="form-input" placeholder="alex@email.com" required></div>
+      <div><label class="form-label">Message</label><textarea name="message" class="form-textarea" placeholder="Tell me about your goals, current level, and what you want to achieve..." required></textarea></div>
       <button type="submit" class="form-submit">Send Message →</button>
     </form>
   </div>
@@ -1278,18 +1278,34 @@
     pricingObs.observe(pricingSection);
   }
 
-  function handleSubmit(e) {
-    e.preventDefault();
-    const form = e.target;
-    form.replaceChildren();
-    const msg = document.createElement('p');
-    msg.style.color = 'var(--green)';
-    msg.style.fontFamily = 'Barlow Condensed, sans-serif';
-    msg.style.fontSize = '1.2rem';
-    msg.style.letterSpacing = '0.08em';
-    msg.style.padding = '40px 0';
-    msg.textContent = 'Message received - Carson will be in touch shortly.';
-    form.appendChild(msg);
+  const FORM_ENDPOINT = 'https://formspree.io/f/xreyeeyz';
+  const contactForm = document.querySelector('.contact-form');
+  if (contactForm) {
+    contactForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const submitBtn = contactForm.querySelector('.form-submit');
+      if (submitBtn) submitBtn.disabled = true;
+      try {
+        const res = await fetch(FORM_ENDPOINT, {
+          method: 'POST',
+          headers: { 'Accept': 'application/json' },
+          body: new FormData(contactForm)
+        });
+        if (!res.ok) throw new Error('Form submission failed');
+        contactForm.replaceChildren();
+        const msg = document.createElement('p');
+        msg.style.color = 'var(--green)';
+        msg.style.fontFamily = 'Barlow Condensed, sans-serif';
+        msg.style.fontSize = '1.2rem';
+        msg.style.letterSpacing = '0.08em';
+        msg.style.padding = '40px 0';
+        msg.textContent = 'Message received - Carson will be in touch shortly.';
+        contactForm.appendChild(msg);
+      } catch (err) {
+        if (submitBtn) submitBtn.disabled = false;
+        alert('There was a problem sending your message. Please email chaskins99@gmail.com directly.');
+      }
+    });
   }
 </script>
 </body>
